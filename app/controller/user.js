@@ -62,7 +62,6 @@ exports.user_login = (req, res, next) => {
                 }
                 if (hashSame) {
                    const token = jwt.sign({
-                        userEmail: user[0].userEmail,
                         _id: user[0]._id
                     }, process.env.JWT_SECRET_KEY, {expiresIn: '1h'});
                     return res.status(200).json({

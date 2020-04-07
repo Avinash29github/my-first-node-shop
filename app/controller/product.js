@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Product = require('../model/product');
 
-exports.get_all_products = (req, res, next) => {
+const get_all_products = (req, res, next) => {
     Product.find()
         .select('_id name price productImage')
         .exec()
@@ -29,7 +29,7 @@ exports.get_all_products = (req, res, next) => {
         })
 }
 
-exports.create_product = (req, res, next) => {
+const create_product = (req, res, next) => {
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
@@ -57,7 +57,7 @@ exports.create_product = (req, res, next) => {
         });
 }
 
-exports.get_single_product = (req, res, next) => {
+const get_single_product = (req, res, next) => {
     const id = req.params.pId;
     Product.findById(id)
         .select('name price productImage')
@@ -81,7 +81,7 @@ exports.get_single_product = (req, res, next) => {
         });
 }
 
-exports.update_product = (req, res, next) => {
+const update_product = (req, res, next) => {
     const id = req.params.pId;
     console.log(req.body);
 
@@ -106,7 +106,7 @@ exports.update_product = (req, res, next) => {
         })
 }
 
-exports.delete_product = (req, res, next) => {
+const delete_product = (req, res, next) => {
     const id = req.params.pId;
     Product.remove({ _id: id })
         .exec()
@@ -119,4 +119,9 @@ exports.delete_product = (req, res, next) => {
             console.log(err)
             res.status(500).json({ error: err });
         });
+}
+
+module.exports = {
+    get_all_products, create_product, get_single_product, 
+    update_product, delete_product
 }

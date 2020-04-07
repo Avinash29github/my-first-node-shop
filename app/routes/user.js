@@ -9,7 +9,7 @@ routes.post('/signup', controller.sign_up_users);
 
 routes.post('/login', controller.user_login);
 
-routes.get('/', checkAuth, controller.get_all_users);
+routes.get('/', controller.get_all_users);
 
 routes.delete('/:userId', checkAuth, controller.user_delete);
 

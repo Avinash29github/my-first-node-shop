@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Order = require('../model/order');
 const Product = require('../model/product');
+const User = require('../model/user');
 
 exports.get_all_orders = (req, res, next) => {
 
@@ -17,6 +18,7 @@ exports.get_all_orders = (req, res, next) => {
                             _id: data._id,
                             productId: data.productId,
                             quantity: data.quantity,
+                            userId: req.id,
                             request: {
                                 type: 'GET',
                                 url: 'http://localhost:3000/orders/' + data._id
@@ -31,9 +33,9 @@ exports.create_order = (req, res, next) => {
     Product.findById(req.body.productId).exec().then(doc => {
         if (doc) {
             const order = new Order({
-                _id: new mongoose.Types.ObjectId(),
                 productId: req.body.productId,
-                quantity: req.body.quantity
+                quantity: req.body.quantity,
+                userId: req.id
             })
             order.save().then((result) => {
                 res.status(201).json({
@@ -60,32 +62,37 @@ exports.create_order = (req, res, next) => {
 
 }
 
-exports.get_single_order = (req, res, next) => {
-    const id = req.params.oId;
-    Order.findById(id).select('_id productId quantity')
-    .populate('productId')
-    .exec()
-        .then(result => {
-            if (result) {
-                res.status(200).json({
-                    message: `${req.params.oId} retreived`,
-                    orderDetails: result,
-                    request: {
-                        type: 'GET',
-                        url: 'http://localhost:3000/orders'
-                    }
+exports.get_single_order = async (req, res, next) => {
+    try {
+        const id = req.params.oId;
+        const accessUser = await Order.findOne({$and:[{_id: id}, {userId: req.id}]})
+        if (!accessUser) {
+            throw 'Access denied for this user'
+        }
+        Order.findById(id)
+        .populate('productId')
+        .exec()
+            .then(result => {
+                if (result) {
+                    console.log(result);                
+                    res.status(200).json(result);
+                } else {
+                    res.status(404).json({
+                        error: `Invalid Order id`
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(500).json({
+                    error: err
                 });
-            } else {
-                res.status(404).json({
-                    error: `Invalid Order id`
-                });
-            }
-        })
-        .catch(err => {
-            res.status(500).json({
-                error: err
             });
+    
+    } catch(error) {
+        res.status(500).json({
+            error
         });
+    }
 }
 
 exports.update_order = (req, res, next) => {
